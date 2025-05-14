@@ -12,6 +12,7 @@ You can also opt to calculate or not calculate best and worst case scenarios.
 
 --- 
 **INPUTS**: List of assets-of-interest (Ex: [GOOG, TSLA, NVDA, COST])
+  - Practical Note: This model does not make any decisions for you regarding the assets you choose to buy.  The set of assets this model considers is 100% up to the best judgement of the user. You may educate your list of assets based on the news, historical data, or recommendations from your unemployed uncle.  The expected returns of the model are fundamentally influenced by the set of assets given as an input.  
 
 **OUTPUTS**: 
 1. list of recommended weights (Ex: [0.2, 0.3, 0.4, 0.1]) 
