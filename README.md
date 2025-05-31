@@ -2,8 +2,8 @@
 Repo for "A Perceptive Markowitz Model" (AA222/CS361 Stanford Final)
 
 Requirements: 
-- Julia v 1.9.3+
-- Python v 3.11.5+
+- Julia 🎀 v 1.9.3+
+- Python 🐍 v 3.11.5+
 - pip install the requirements.txt file
 - activate the Julia environment 
 
@@ -30,3 +30,32 @@ You can also opt to calculate or not calculate best and worst case scenarios.
   - Optional, requires simulations rather than a purely reactive model
 
 ---
+**RUNNING NOTES**
+
+aesthetic✨ plots I want
+- overlaid weights vs epoch
+- holding time vs epoch
+- Objective func (Sharpe Ratio) vs epoch
+- GP confidence range
+
+evaluation metrics
+- opt Sharpe to n random Sharpes
+- opt returns to avg n random returns
+- Sharpe-Return efficiency plot (multiobjective metric on both sharpe ratio AND returns with frontier)
+- out-of-sample dominance rate (how well does this portfolio work on other samples)
+
+usage and FLOW 🌊
+- input portfolio
+  - BACKEND: extract all data, 
+- do you want to allow shorting?  
+  - if no: good responsible trader 🤭
+  - if yes: How wild r u? (do you want a shorting limit)
+    - BACKEND: set l-infinity norm on design vector
+- note on relevant price for optimization
+  - by default, will optimize on CLOSING PRICE
+  - if desired, allow user the freedom to optimize on OPENING PRICES, HIs, or LOs.  but disclaimer that this tool is not designed for high-frequency intra-day trading anyways, so this metric really shouldn't matter. 
+- optimize on Expectation, or best/worst case
+  - adjust surrogate objective function as fit
+  - keep data on the other metrics anyways, will be useful for result visualization
+
+
