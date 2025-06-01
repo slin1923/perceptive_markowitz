@@ -11,13 +11,6 @@ asset_categories = {
         "ORCL", "NKE", "LLY", "TMO", "MDT", "BMY", "RTX", "BA", "CAT", "MMM",
         "GE", "HON", "LOW", "SBUX", "CVS", "ADBE", "CRM", "PYPL", "QCOM", "TXN"
     ],
-    "penny": [
-        "SNDL", "ZOM", "GTE", "HCMC", "ENZC", "AITX", "IQST", "DPLS", "CYBL", "TONR",
-        "BCL", "GAXY", "INND", "HMBL", "ILUS", "SIRC", "AABB", "NSAV", "ALPP", "BDPT",
-        "MJWL", "TGGI", "GTEH", "PHIL", "RGBP", "SFOR", "ABML", "GGII", "IDEX", "OPTI",
-        "PUGE", "SNPW", "VYST", "WDLF", "XELA", "ZICX", "AMYZF", "AXXA", "BRLL", "CBTC",
-        "CLNV", "DPLS", "ECOX", "FBCD", "GDET", "HCMC", "ICNM", "JPEX", "KATX", "LCLP"
-    ],
     "etfs": [
         "SPY", "QQQ", "VTI", "DIA", "ARKK", "XLF", "XLK", "IWM", "EFA", "TLT",
         "IVV", "VOO", "VEA", "VWO", "IEMG", "EEM", "VUG", "VTV", "IWB", "IWR",

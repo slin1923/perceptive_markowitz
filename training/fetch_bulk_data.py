@@ -2,7 +2,6 @@
 import yfinance as yf
 import json
 import time
-import random
 from datetime import datetime, timedelta
 from pathlib import Path
 from asset_categories import asset_categories  # <-- 🌈 pulled in from separate file!
@@ -25,6 +24,11 @@ def fetch_and_save(ticker, category):
         df['Date'] = df['Date'].dt.strftime('%Y-%m-%d') # <-- 💖 MAKE IT JSON-SAFE
         records = df.to_dict(orient='records')
 
+        # ☕ Check if the tea is in the cup
+        if len(records) < 100:
+            print(f"⚠️ {ticker} ({category}) has only {len(records)} entries. Skipping.")
+            return
+
         # 💾 Save to file
         with open(output_dir / f"{category}_{ticker}.json", "w") as f:
             json.dump(records, f)
@@ -34,6 +38,6 @@ def fetch_and_save(ticker, category):
 
 # 🎯 Pull 10 random tickers per category and fetch
 for category, ticker_list in asset_categories.items():
-    selected = random.sample(ticker_list, min(10, len(ticker_list)))
-    for ticker in selected:
+    print(f"✨ Fetching {len(ticker_list)} tickers for category: {category}")
+    for ticker in ticker_list:
         fetch_and_save(ticker, category)

@@ -58,4 +58,35 @@ usage and FLOW 🌊
   - adjust surrogate objective function as fit
   - keep data on the other metrics anyways, will be useful for result visualization
 
+key variablesss - should live in a main optimization script. 
+- portpop: size k * n+1 population of design vectors [w, t]
+- eval_space: n*m vector; static per study; farmed data
+  - n assets in portofolio
+  - m closing value history
+  - farmed once from API and stored to prevent yahoo finance from CRASHING OUT
+  - should remain static per study
 
+analysis class (pass eval_space); name something cute
+- analyze(self.eval_space, design): 
+  - returns tuple for a single individual (nx1 vector of expected returns per asset, nxn covolatility matrix, float returns of individual, float volatility of individual, float sharpe ratio with risk-free-rate dropped) *
+  - note return tuple is expressed in order required of calculation since subsequent values are dependent on previous values
+  - returns and covolatility based on lookback time t which is last element of design vector. 
+- analyze_pop(self.eval_space, portpop): uses analyze applied to every individual in portpop.  
+  - returns basically the last 3 values of what analyze should return but up-dimensioned to every individual
+  - add these values to global class variables r_hists, v_hists, s_hists
+- get_hists()
+  - simple accessor method for r_hists, v_hists, s_hists
+
+
+✨plotting library *make these beautiful
+- sharpe2sharpe(design, self.randoms, self.eval_space): returns sharpe ratio of design and all sharpe ratios of random designs.  add single evaluation to global history tracker variable for plotting later. 
+- returns2returns(design, self.randoms, self.eval_space): same deal but this time with only returns. 
+- will add more when needing GP fitting
+- sharpe2sharpe_plotter(design_sharpe_hists, rand_sharpes): plot evolution of sharpe ratio of design vs 
+
+a quick tracker for what the json files look like: 
+<html>
+<body>
+<p>[{"Date": "2015-06-01", "Close_BAC": 13.394068717956543, "High_BAC": 13.466906680733567, "Low_BAC": 13.32932403366975, "Open_BAC": 13.41834855342723, "Volume_BAC": 62941600}, {"Date": "2015-06-02", "Close_BAC": 13.531647682189941, "High_BAC": 13.564020787340054, "Low_BAC": 13.35360023476816, "Open_BAC": 13.369786787343218, "Volume_BAC": 65513200}, ...]</p>
+</html>
+</body>
