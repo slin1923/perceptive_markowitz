@@ -20,10 +20,13 @@ import yfinance as yf
 import matplotlib.pyplot as plt
 import json
 import os
+import shutil
 from datetime import datetime, timedelta
 
 # 🗂 Ensure the output folder exists
-os.makedirs("lineup", exist_ok=True)
+if os.path.exists("lineup"):
+    shutil.rmtree("lineup")  # remove the folder and all contents
+os.makedirs("lineup")  # recreate empty folder
 
 # 📅 10 years ago from today
 default_start = (datetime.today() - timedelta(days=365 * 10)).strftime("%Y-%m-%d")
