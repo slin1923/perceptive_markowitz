@@ -1,2 +1,4 @@
 venv/ # Virtual environment directory
 lineup/ # Lineup directory
+training/*.json # Training directory
+__pycache__/ # Python cache files
