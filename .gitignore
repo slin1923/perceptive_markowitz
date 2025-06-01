@@ -1,1 +1,3 @@
-venv/
+venv/ # Virtual environment directory
+lineup/ # Lineup directory
+__pycache__/ # Python cache files
