@@ -2,6 +2,11 @@ using JSON, Dates
 using Glob
 using Random
 
+include("Softlytics.jl")  # 🧠 Import Analyzer for data analysis
+include("Genetipop.jl")  # 🧬 Import Evolver for evolutionary algorithms
+using .Softlytics: Analyzer
+using .Genetipop: Evolver
+
 const TRAINING_MODE = false            # 🎀 Toggle this for real vs training mode
 const TRAINING_DIR = "training"
 const LINEUP_DIR = "lineup"
@@ -87,7 +92,7 @@ function fetch_eval_space()
 end
 
 # ✨ Main Test Function ✨
-function main()
+function test_fetch_eval_space()
     println("🧠 Launching Optimizeee.jl...")
 
     # 🚀 Fetch and clean evaluation space
@@ -107,5 +112,26 @@ function main()
     println(dates[1:min(end, 5)])
 end
 
+function main()
+    # Load data, align JSONs, create eval_space...
+    tickers, eval_space, dates = fetch_eval_space()
+
+    # 🎀 Instantiate your Analyzer bestie
+    analyzer = Analyzer(eval_space)
+
+    # 🎀 GENETIC ENGINE HYPERPARAMETER KNOBS
+    evolver = Evolver(
+    population_size = 100,
+    num_assets = size(eval_space, 1),
+    allow_shorting = false,
+    mutation_rate = 0.1,
+    crossover_rate = 0.8,
+    elite_frac = 0.1,
+)
+
+    println("🧠 Analyzer and 🧬 Evolver are initialized and ready to werk 💅")
+end
+
 # 🏁 Run the main function if this file is the entry point
+# test_fetch_eval_space()
 main()

@@ -2,7 +2,7 @@ module Genetipop
 
 export Evolver
 
-using Random, Statistics
+using Random, Statistics, Distributions
 
 # 🧬🎀 Evolver: Handles all things evolution — selection, mutation, crossover, and next-gen glow-ups.
 mutable struct Evolver
@@ -12,6 +12,7 @@ mutable struct Evolver
     mutation_rate::Float64
     crossover_rate::Float64
     elite_frac::Float64
+    mutation_style::Symbol  # 🎀 options: :gaussian, :flip, :dirichlet
 end
 
 """
@@ -27,9 +28,9 @@ end
 function initialize_population(evo::Evolver)
     pop = zeros(Float64, evo.population_size, evo.num_assets + 1)
     for i in 1:evo.population_size
-        w = randn(evo.num_assets)
+        w = randn(evo.num_assets) # random normal to allow shorting
         if !evo.allow_shorting
-            w = abs.(w)
+            w = abs.(w) # no negative weights if shorting not allowed
         end
         w ./= sum(w)  # Normalize weights to sum to 1
         t = rand(30:250)  # Random holding time in trading days
@@ -39,81 +40,141 @@ function initialize_population(evo::Evolver)
 end
 
 """
-    select_elites(pop::Matrix, scores::Vector, frac::Float64) -> Matrix
+💞 Midpoint Crossover: Gently blends two parents into one glam child.
 
-👑 Select the top `frac` of the population based on scores (e.g. Sharpe).
+- Weights: midpoint (preserves sum to 1)
+- Holding time (t): random pick from parent1.t, parent2.t, or any int in between
 
-# Returns
-- Elite subset of the population sorted by score.
-"""
-function select_elites(pop::Matrix{Float64}, scores::Vector{Float64}, frac::Float64)
-    k = size(pop, 1)
-    num_elite = max(1, round(Int, frac * k))
-    sorted_idx = sortperm(scores, rev=true)
-    return pop[sorted_idx[1:num_elite], :]
-end
+Arguments:
+- parent1::Vector{Float64}
+- parent2::Vector{Float64}
+- rate::Float64 🎀 crossover probability
 
-"""
-    crossover(parent1::Vector, parent2::Vector, rate::Float64) -> Vector
-
-💞 Blend two parent vectors into a new child.
-
-# Returns
-- A new design vector mixed from both parents.
+Returns:
+- child::Vector{Float64}
 """
 function crossover(parent1::Vector{Float64}, parent2::Vector{Float64}, rate::Float64)
     if rand() > rate
-        return rand(Bool) ? parent1 : parent2  # no crossover, pick one
+        return rand(Bool) ? parent1 : parent2  # no crossover, random clone
     end
-    point = rand(1:length(parent1)-1)  # don't split t
-    return vcat(parent1[1:point], parent2[point+1:end])
+
+    # Split genes
+    w1, t1 = parent1[1:end-1], parent1[end]
+    w2, t2 = parent2[1:end-1], parent2[end]
+
+    # ✨ Midpoint weights (preserves structure)
+    w_child = (w1 + w2) ./ 2
+    w_child ./= sum(w_child)  # just to be sure 🎀
+
+    # 🎲 Time gene: randomly choose from [t1, t2] inclusive
+    t_min, t_max = min(t1, t2), max(t1, t2)
+    t_child = rand(t_min:t_max)
+
+    return vcat(w_child, t_child)
 end
 
 """
-    mutate!(individual::Vector{Float64}, rate::Float64, allow_shorting::Bool)
+💅 mutate_individual(evo::Evolver, indiv::Vector{Float64}) -> Vector{Float64}
 
-🌪 Add random spice to an individual (in-place mutation).
+✨ Mutation, but make it *fashion*.
 
-- Slightly perturbs weights or lookback time.
+Applies a user-selected mutation style to a given portfolio individual while preserving
+critical structure — weights always sum to 1, and no negative weights if shorting is disallowed.
+This ensures the resulting portfolio remains valid and *fabulous*.
+
+🎀 Mutation styles:
+  • :gaussian  → A subtle glam touch. Adds soft noise to each weight for delicate evolution.
+                 Negative values are turned positive if shorting is off. Always renormalized.
+  • :flip      → Flip two randomly chosen weights like switching accessories on a bold outfit.
+                 A simple yet striking mutation for quick shifts in vibe.
+  • :dirichlet → Burn it down and start over (but pretty). Replaces weights with a brand new
+                 draw from a Dirichlet distribution, ensuring they remain normalized perfection.
+
+⏳ Lookback time is left untouched — she's already living her spontaneous, random life 
+     thanks to crossover.
+
+💖 Returns a new individual ready to *serve returns and looks* in the next generation.
+
 """
-function mutate!(individual::Vector{Float64}, rate::Float64, allow_shorting::Bool)
-    n = length(individual) - 1
-    for i in 1:n
-        if rand() < rate
-            individual[i] += 0.1 * randn()
+function mutate_individual(evo::Evolver, indiv::Vector{Float64})
+    weights = copy(indiv[1:end-1])  # 💄 keep the original glam safe
+    t = indiv[end]  # ⏳ don't touch the timeline queen (unless asked!)
+
+    # 💤 sometimes you need to skip the drama
+    if rand() > evo.mutation_rate
+        return indiv  # she's flawless, no notes
+    end
+
+    if evo.mutation_style == :gaussian
+        # 💋 Soft glam: add a gentle, controlled wiggle
+        noise = rand(Normal(0, 0.05), evo.num_assets)
+        if !evo.allow_shorting
+            noise = abs.(noise)  # we don’t do negativity in this salon 💅
         end
-    end
-    if !allow_shorting
-        individual[1:n] .= max.(individual[1:n], 0.0)
-    end
-    individual[1:n] ./= sum(individual[1:n])  # re-normalize
+        weights += noise
+        weights = max.(weights, 0.0)  # never go below zero, sweetie
+        weights ./= sum(weights)  # reblend for balance, always
 
-    if rand() < rate
-        individual[end] += rand(-10:10)
-        individual[end] = clamp(individual[end], 30, 250)
+    elseif evo.mutation_style == :flip
+        # 💅 Drama alert: flip two weights like it's a wardrobe change
+        i, j = rand(1:evo.num_assets, 2)
+        weights[i], weights[j] = weights[j], weights[i]
+        # 💫 nothing else changes — just a bold outfit switch
+
+    elseif evo.mutation_style == :dirichlet
+        # 🔮 Full rebirth: new girl, new vibe, new allocation
+        α = ones(evo.num_assets)  # equal love for all assets
+        weights = rand(Dirichlet(α))  # pure, balanced chaos
+
+    else
+        error("❌ Unknown mutation style: $(evo.mutation_style). Try :gaussian, :flip, or :dirichlet, hun.")
     end
+
+    return vcat(weights, t)  # 👠 serve looks *and* returns
 end
 
 """
-    next_generation(evo::Evolver, old_pop::Matrix{Float64}, scores::Vector{Float64}) -> Matrix{Float64}
+🧬 new_gen(evo::Evolver, pop::Matrix{Float64}, scores::Vector{Float64}; 
+           selection_method=:tournament, mutation_method=:gaussian, heat_size::Int=3)
 
-🌱 Create a new generation using selection, crossover, and mutation.
+The all-in-one evolution glow-up method 💖
 
-# Returns
-- A new population matrix.
+✨ This function:
+  1. Selects parent pairs using your chosen method (tournament, truncation, or roulette)
+  2. Performs crossover to birth new glam portfolios that respect constraints
+  3. Mutates them (lightly or fiercely, depending on your style)
+  4. Retains elite individuals based on elite_frac
+  5. Returns a sparkling new generation ready to SLAY returns
+
+🎀 Hyperparams:
+  • selection_method: Symbol → :tournament | :truncation | :roulette
+  • mutation_method: Symbol → :gaussian | :flip | :dirichlet
+  • heat_size: Int → Tournament size (if applicable)
+
+👛 Returns:
+  • Matrix{Float64} → A full next-generation population
 """
-function next_generation(evo::Evolver, old_pop::Matrix{Float64}, scores::Vector{Float64})
-    elites = select_elites(old_pop, scores, evo.elite_frac)
-    new_pop = copy(elites)
+function new_gen(evo::Evolver, pop::Matrix{Float64}, scores::Vector{Float64};
+                 selection_method::Symbol = :tournament,
+                 mutation_method::Symbol = :gaussian,
+                 heat_size::Int = 3)
 
-    while size(new_pop, 1) < evo.population_size
-        p1, p2 = rand(elites, 2)
-        child = crossover(p1, p2, evo.crossover_rate)
-        mutate!(child, evo.mutation_rate, evo.allow_shorting)
-        new_pop = vcat(new_pop, reshape(child, 1, :))
+    k = evo.population_size
+    num_assets = evo.num_assets
+    num_elite = max(1, round(Int, evo.elite_frac * k))
+    new_pop = Matrix{Float64}(undef, k, num_assets + 1)
+
+    # 🎓 Step 1: Keep elites
+    sorted_idx = sortperm(scores, rev=true)
+    new_pop[1:num_elite, :] = pop[sorted_idx[1:num_elite], :]
+
+    # 🎁 Step 2: Reproduce the rest
+    for i in num_elite+1:k
+        parent1, parent2 = select_parents(pop, scores, selection_method; frac=evo.elite_frac, heat_size=heat_size)
+        child = crossover(parent1, parent2, evo.crossover_rate)
+        child = mutate_individual(evo, child, mutation_method)
+        new_pop[i, :] = child
     end
 
     return new_pop
 end
-
-end  # module Genetipop 🎀🧬
