@@ -2,8 +2,8 @@
 Repo for "A Perceptive Markowitz Model" (AA222/CS361 Stanford Final)
 
 Requirements: 
-- Julia 🎀 v 1.9.3+
-- Python 🐍 v 3.11.5+
+- Julia v 1.9.3+
+- Python v 3.11.5+
 - pip install the requirements.txt file
 - activate the Julia environment 
 
@@ -32,7 +32,7 @@ You can also opt to calculate or not calculate best and worst case scenarios.
 ---
 **RUNNING NOTES**
 
-aesthetic✨ plots I want
+plots I want
 - overlaid weights vs epoch
 - holding time vs epoch
 - Objective func (Sharpe Ratio) vs epoch
@@ -44,11 +44,11 @@ evaluation metrics
 - Sharpe-Return efficiency plot (multiobjective metric on both sharpe ratio AND returns with frontier)
 - out-of-sample dominance rate (how well does this portfolio work on other samples)
 
-usage and FLOW 🌊
+usage and flow
 - input portfolio
   - BACKEND: extract all data, 
 - do you want to allow shorting?  
-  - if no: good responsible trader 🤭
+  - if no: good responsible trader
   - if yes: How wild r u? (do you want a shorting limit)
     - BACKEND: set l-infinity norm on design vector
 - note on relevant price for optimization
@@ -78,7 +78,7 @@ analysis class (pass eval_space); name something cute
   - simple accessor method for r_hists, v_hists, s_hists
 
 
-✨plotting library *make these beautiful
+plotting library 
 - sharpe2sharpe(design, self.randoms, self.eval_space): returns sharpe ratio of design and all sharpe ratios of random designs.  add single evaluation to global history tracker variable for plotting later. 
 - returns2returns(design, self.randoms, self.eval_space): same deal but this time with only returns. 
 - will add more when needing GP fitting
